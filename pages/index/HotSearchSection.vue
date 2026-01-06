@@ -85,6 +85,12 @@ async function init() {
   await fetchHotSearches();
 }
 
+// 刷新数据（每次重置时调用）
+async function refresh() {
+  console.log('[HotSearchSection] 手动刷新数据...');
+  await fetchHotSearches();
+}
+
 // 根据分数计算标签样式
 function getTagStyle(score: number) {
   if (searches.value.length === 0) return {};
@@ -128,7 +134,7 @@ function onSearchClick(term: string) {
 // 暴露方法给父组件
 defineExpose({
   init,           // 首次初始化（只执行一次）
-  refresh: fetchHotSearches  // 手动刷新
+  refresh         // 手动刷新
 });
 </script>
 

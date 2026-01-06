@@ -280,18 +280,6 @@ export function useSearch() {
     }
   }
 
-  // 记录搜索词到热搜
-  async function recordHotSearch(keyword: string): Promise<void> {
-    try {
-      await $fetch('/api/hot-searches', {
-        method: 'POST',
-        body: { term: keyword },
-      });
-    } catch (error) {
-      // 静默失败，不影响主搜索流程
-    }
-  }
-
   // 主搜索函数
   async function performSearch(options: SearchOptions): Promise<void> {
     const { keyword, settings } = options;
@@ -335,10 +323,6 @@ export function useSearch() {
     const mySeq = ++searchSeq;
     const start = performance.now();
 
-    // 记录到热搜（在搜索开始时，不管有没有结果都记录）
-    // 立即开始记录，不阻塞搜索流程
-    const recordPromise = recordHotSearch(keyword);
-
     try {
       // 1) 快速搜索
       const fastMerged = await performFastSearch(options);
@@ -358,12 +342,6 @@ export function useSearch() {
     } catch (error: any) {
       state.value.error = error?.data?.message || error?.message || "请求失败";
     } finally {
-      // 等待热搜记录完成
-      try {
-        await recordPromise;
-      } catch (e) {
-        // 忽略热搜记录错误
-      }
       state.value.elapsedMs = Math.round(performance.now() - start);
       // 如果暂停了，保持 loading 状态，只取消 deepLoading
       if (!state.value.paused) {

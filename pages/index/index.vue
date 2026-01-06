@@ -242,9 +242,11 @@ async function fullReset() {
   resetSearch();
   // 重置时刷新热搜数据
   console.log('[index] hotSearchRef.value:', hotSearchRef.value);
+
   if (hotSearchRef.value) {
     console.log('[index] 调用 hotSearchRef.value.refresh()');
     await hotSearchRef.value.refresh();
+    console.log('[index] refresh() 完成');
   } else {
     console.log('[index] hotSearchRef.value 为 null，无法刷新热搜');
   }
