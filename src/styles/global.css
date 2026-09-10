@@ -76,8 +76,9 @@ body {
   font-family: "Manrope", "Noto Sans SC", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
   background: var(--bg-body);
   color: var(--text-primary);
-  height: 100%;
-  overflow: hidden;
+  /* 不锁死高度、不禁止溢出：滚动交给文档本身，移动端才有顺滑的原生滚动 */
+  min-height: 100%;
+  overflow-x: hidden;
 
   /* iOS Safari兼容性 */
   -webkit-text-size-adjust: 100%;

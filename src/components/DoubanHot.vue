@@ -60,7 +60,7 @@
 </template>
 
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref } from "vue";
+import { nextTick, onBeforeUnmount, onMounted, ref } from "vue";
 import { apiGet, apiUrl } from "../api/client";
 
 defineEmits(["search"]);
@@ -158,6 +158,9 @@ async function selectCategory(categoryId: string) {
   items.value = [];
   loading.value = true;
   await fetchPage(categoryId, 1, false);
+  // 必须等 DOM 更新完再找触发器：Vue 的更新是异步的，
+  // 同步读 loadTriggerRef 会拿到 null，导致「加载更多」永不触发
+  await nextTick();
   setupObserver();
 }
 
@@ -170,16 +173,21 @@ function setupObserver() {
   observer?.disconnect();
   const target = loadTriggerRef.value;
   if (!target) return;
-  observer = new IntersectionObserver((entries) => {
-    if (entries[0].isIntersecting && hasMore.value && !loading.value && !loadingMore.value) {
-      loadMore();
-    }
-  });
+  observer = new IntersectionObserver(
+    (entries) => {
+      if (entries[0].isIntersecting && hasMore.value && !loading.value && !loadingMore.value) {
+        loadMore();
+      }
+    },
+    // 提前 300px 触发预加载，滚到底时数据已就位，不会看到空档
+    { rootMargin: "300px" }
+  );
   observer.observe(target);
 }
 
 onMounted(async () => {
   await fetchPage(selectedCategoryId.value, 1, false);
+  await nextTick();
   setupObserver();
 });
 
@@ -222,8 +230,11 @@ onBeforeUnmount(() => observer?.disconnect());
 
 .movie-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
-  gap: 14px;
+  /* 固定列数（与原站一致）：桌面 5 列 / 移动 4 列。
+     此前用 auto-fill + minmax(132px) 在宽屏会自动挤成 7 列，
+     卡片过小、整页观感过密 */
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
 }
 
 .movie-card {
@@ -343,7 +354,7 @@ onBeforeUnmount(() => observer?.disconnect());
 
 @media (max-width: 640px) {
   .movie-grid {
-    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+    grid-template-columns: repeat(4, 1fr);
     gap: 10px;
   }
 }

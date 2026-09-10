@@ -377,12 +377,14 @@ onBeforeUnmount(() => {
 <style scoped>
 /* ===== 布局骨架 ===== */
 .layout {
-  height: 100vh;
+  /* 用文档级滚动（不设 height + overflow-y）：
+     内层 100vh 滚动容器会让移动端的原生惯性滚动、回弹、地址栏自动收起
+     全部失效，滚动发涩。由 body 承担滚动才符合移动端预期 */
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
   position: relative;
   overflow-x: hidden;
-  overflow-y: auto;
 }
 
 /* 背景装饰光斑：径向渐变（不用 filter: blur，滚动零重绘开销） */
