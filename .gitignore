@@ -1,47 +1,23 @@
-# Nuxt dev/build outputs
-.output
-.data
-.nuxt
-.nitro
-.cache
-dist
-
-# Cloudflare wrangler local state
-.wrangler/
-
-# Node dependencies
+# 依赖
 node_modules
 
-# Logs
+# 构建产物
+dist
+
+# 本地日志
 logs
 *.log
 
-# Misc
+# 系统/IDE
 .DS_Store
-.fleet
 .idea
+.fleet
 
-# Local env files
+# 本地环境变量
 .env
 .env.*
-!.env.example
 
-# Runtime data (SQLite database, hot-searches)
-data/
-
-# Tooling / IDE local data (never project source)
+# 工具本地数据
 .claude/
 .codebuddy/
 .playwright-mcp/
-.workbuddy/
-
-# Vitest config-transform temp files (regenerated on every test run)
-vitest.config.ts.timestamp-*.mjs
-
-# Vitest test DB sandbox dirs (created/cleaned by unit tests)
-data-test*
-
-# Guard: this project uses npm, NOT pnpm — ignore accidental pnpm artifacts
-pnpm-lock.yaml
-pnpm-workspace.yaml
-.zcode/

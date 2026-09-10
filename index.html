@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"
+    />
+    <title>PanHub · 全网最全的网盘搜索</title>
+    <meta
+      name="description"
+      content="PanHub：聚合阿里云盘、夸克、百度网盘、115、迅雷等平台的全网最全网盘搜索工具，实时检索分享资源，快速、高效。"
+    />
+    <meta
+      name="keywords"
+      content="网盘搜索, 阿里云盘, 夸克, 百度网盘, 115, 迅雷, 资源搜索, 盘搜, panhub, 网盘聚合搜索"
+    />
+    <meta name="theme-color" content="#111111" />
+    <link rel="icon" type="image/svg+xml" href="./icons/favicon.svg" />
+    <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png" />
+
+    <!--
+      wx-auth 公共登录组件（全局单例 window.WxAuth）。
+      defer 保证不阻塞首屏解析，且在下方 module 脚本之前执行；
+      即使加载失败，应用内也有动态补插兜底。
+    -->
+    <script
+      defer
+      src="https://unpkg.com/wx-auth-sdk/dist/wx-auth.umd.js"
+    ></script>
+
+    <!--
+      顶部导航 Web Component（站点导航 + 头像登录）。
+      必须在 wx-auth-sdk 之后加载：site-navbar 检测到 window.WxAuth 已存在时
+      会直接复用而不重新 init，从而不会覆盖我们配置的认证回调。
+    -->
+    <script
+      defer
+      src="https://unpkg.com/@wu529778790/site-navbar@latest/dist/site-navbar.wc.js"
+    ></script>
+
+    <script>
+      // 首屏即时应用系统深色模式（避免闪白）
+      (function () {
+        try {
+          if (
+            window.matchMedia &&
+            window.matchMedia("(prefers-color-scheme: dark)").matches
+          ) {
+            document.documentElement.classList.add("dark");
+          }
+        } catch (e) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

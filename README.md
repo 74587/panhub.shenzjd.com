@@ -1,44 +1,84 @@
-# PanHub · 全网最全的网盘搜索
+# PanHub · 全网最全的网盘搜索（纯静态前台）
 
-> 一个搜索框，搜遍全网网盘资源 —— 即搜即得、聚合去重、轻量部署
+> 一个搜索框，搜遍全网网盘资源 —— 即搜即得、聚合去重、零服务端部署
 
 **在线体验**：<https://panhub.shenzjd.com>
 
-## ✨ 核心特性
+本仓库是 PanHub 开源的**纯静态前台**：没有服务端、没有后台、没有数据库。
+构建产物是一堆静态文件，丢到任意静态托管（GitHub Pages / Cloudflare / Vercel /
+对象存储 / Nginx）即可运行。
 
-- **多源聚合**：Telegram 频道 + 第三方插件，聚合去重、智能排序、插件熔断隔离
+## ✨ 特性
+
+- **纯静态**：只有 HTML + Vue 3，`npm run build` 产出 `dist/`，无任何服务端依赖
+- **零配置**：接口地址已指向 PanHub 官方服务，clone 后构建即可用
+- **连接官方搜索**：聚合 Telegram 频道与第三方源，边搜边出（SSE 流式）
+- **一键获取**：搜索结果可直接换取网盘分享链接并复制口令
 - **影视榜单**：豆瓣 12 分类，点击即可一键搜索
 - **链接探活**：服务端检测失效 / 需密码链接，自动标记角标
-- **零数据库**：不设用户数据库，不记录搜索词与个人身份
-- **多端部署**：Docker / Vercel / Cloudflare Workers
+- **深色模式**：跟随系统 `prefers-color-scheme`，首屏无闪白
 
 ## 🚀 快速开始
 
 ```bash
-# Docker
-docker run -d -p 4000:4000 ghcr.io/wu529778790/panhub.shenzjd.com:latest
+npm install
+npm run dev      # 本地开发 http://localhost:4001
+npm run build    # 产出 dist/（纯静态）
+npm run preview  # 本地预览构建产物
 ```
 
-## ⚡ 一键部署
+## 📦 部署
 
-| 平台 | 部署方式 |
-|------|---------|
-| Vercel | [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fwu529778790%2Fpanhub.shenzjd.com&project-name=panhub) |
-| Cloudflare Workers | [![Deploy to Cloudflare Workers](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https%3A%2F%2Fgithub.com%2Fwu529778790%2Fpanhub.shenzjd.com) |
+产物在 `dist/`，任何静态托管都可用。构建时 `base` 已设为相对路径，
+因此**部署在子路径也能正常工作**（例如 GitHub Pages 的 `/仓库名/`）。
 
-> Cloudflare Workers 构建命令使用 `npm run build:cf`（Nitro Cloudflare 预设）。
-> 部署环境变量参考 `.env.example`（复制为 `.env` 后修改）；默认零必配环境变量。
+### GitHub Pages（本仓库已内置自动部署）
 
-- 本地开发：`npm install && npm run dev`；测试：`npm test`
+推送 `main` 即自动构建并发布，无需手动跑构建。Action 会尝试自动开启 Pages；
+若因仓库权限导致失败，手动开启一次即可：
 
-## 📦 支持平台
+1. 打开仓库 **Settings → Pages**
+2. **Source** 选择 **GitHub Actions**（不要选 "Deploy from a branch"）
+3. 到 **Actions** 页等 `Deploy to GitHub Pages` 跑完，访问
+   `https://<用户名>.github.io/<仓库名>/`
 
-阿里云盘 / 夸克 / 百度网盘 / 115 / 迅雷 / UC / 天翼云盘 / 123 网盘 / 移动云盘 / 磁力链接
+之后每次 push 到 `main` 都会自动重新发布。
 
-## 🔐 登录与配额
+### 其他平台
 
-- 搜索需登录：登录态由独立的认证服务 wx-auth 校验（关注公众号 + 验证码），默认使用内置服务地址，可通过 `WX_AUTH_API_BASE` 指向自建实例
-- 页面端免费搜索次数用完后，看一段激励视频广告即可重新解锁（`WX_AUTH_API_BASE` 同一服务提供验票）
+| 平台 | 设置 |
+|------|------|
+| **Cloudflare Pages** | 构建命令 `npm run build`，输出目录 `dist` |
+| **Vercel** | 框架预设选 `Vite`，构建命令 `npm run build`，输出目录 `dist` |
+| **任意静态托管** | 本地 `npm run build` 后，把 `dist/` 整个目录上传 |
+
+## 🔍 工作原理
+
+```
+① 用户输入关键词
+      ↓
+② 确保已登录 —— wx-auth 公共组件（关注公众号 / 小程序扫码）
+      ↓
+③ GET  /api/search.stream     SSE 长连接，服务端逐批推送，边搜边出
+      ↓
+④ POST /api/transfer          对带 tid 的条目换取网盘分享链接
+      ↓
+⑤ 复制口令 → 打开网盘 APP 保存
+```
+
+登录与数据都在官方服务侧，前端只负责调用与展示。
+
+## ⚠️ 重要提醒
+
+- **必须由浏览器直连官方 API。** 不要用 Node / 服务端做代理转发：
+  官方接口对脚本 UA 有拦截策略，代理转发会被判定为爬虫并封禁 IP。
+- **未登录时后端不会报错**，而是返回结构完全一致的演示数据。
+  调试接口请先完成登录，否则你看到的是假数据。
+- 本仓库**不含任何服务端代码**。请勿在其中提交密钥或私有配置。
+
+## 📖 接口文档
+
+开放的接口清单、鉴权方式、SSE 协议与错误码见 **[API.md](./API.md)**。
 
 ## 🛡️ 免责声明
 
